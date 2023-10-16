@@ -18,7 +18,11 @@ var CACHED_URLS = [
 "/img/jumbo-background.jpg",
 "/img/reservation-gih.jpg",
 "/img/about-hotel-spa.jpg",
-"/img/about-hotel-luxury.jpg"
+"/img/about-hotel-luxury.jpg",
+"/my-account.html",
+"/js/my-account.js",
+"/reservations.json"
+
 ];
 self.addEventListener("install", function(event) {
 event.waitUntil(
@@ -34,7 +38,23 @@ return caches.match(event.request).then(function(response) {
 if (response) {
 return response;
 } else if (event.request.headers.get("accept").includes("text/html")) {return caches.match("/index.html");
-}
+} else if (requestURL.pathname === "/my-account") {
+    event.respondWith(
+    caches.match("/my-account.html").then(function(response) {
+    return response || fetch("/my-account.html");
+    })
+    );
+    } else if (requestURL.pathname === "/reservations.json") {
+    event.respondWith(
+    caches.open(CACHE_NAME).then(function(cache) {
+    return fetch(event.request).then(function(networkResponse) {
+    cache.put(event.request, networkResponse.clone());
+    return networkResponse;
+    }).catch(function() {
+    return caches.match(event.request);
+    });
+    })
+    );}
 });
 })
 );
