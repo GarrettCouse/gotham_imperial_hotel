@@ -1,3 +1,4 @@
+importScripts("/js/reservations-store.js");
 var CACHE_NAME = "gih-cache-v4";
 var CACHED_URLS = [
 // Our HTML
@@ -21,7 +22,8 @@ var CACHED_URLS = [
 "/img/about-hotel-luxury.jpg",
 "/my-account.html",
 "/js/my-account.js",
-"/reservations.json"
+"/reservations.json",
+"/js/reservations-store.js"
 
 ];
 self.addEventListener("install", function(event) {
