@@ -57,39 +57,46 @@ reject(errorMessage);
 });
 });
 };
-var getReservations = function() {
-return new Promise(function(resolve) {
-openDatabase().then(function(db) {
-var objectStore = openObjectStore(db, "reservations");
-var reservations = [];
-objectStore.openCursor().onsuccess = function(event) {
-var cursor = event.target.result;
-if (cursor) {
-reservations.push(cursor.value);
-cursor.continue();
-} else {
-if (reservations.length > 0) {
-resolve(reservations);
-} else {
-getReservationsFromServer().then(function(reservations) {
-openDatabase().then(function(db) {
-var objectStore =
-openObjectStore(db, "reservations", "readwrite");
-for (var i = 0; i < reservations.length; i++) {objectStore.add(reservations[i]);
-}
-resolve(reservations);
-});
-});
-}
-}
-};
-}).catch(function() {
-getReservationsFromServer().then(function(reservations) {
-resolve(reservations);
-});
-});
-});
-};
+var getReservations = function(indexName, indexValue) {
+    return new Promise(function(resolve) {
+    openDatabase().then(function(db) {
+    var objectStore = openObjectStore(db, "reservations");
+    var reservations = [];
+    var cursor;
+    if (indexName && indexValue) {
+    cursor = objectStore.index(indexName).openCursor(indexValue);
+    } else {
+    cursor = objectStore.openCursor();
+    }
+    cursor.onsuccess = function(event) {
+    var cursor = event.target.result;
+    if (cursor) {
+    reservations.push(cursor.value);
+    cursor.continue();
+    } else {
+    if (reservations.length > 0) {
+    resolve(reservations);
+    } else {
+    getReservationsFromServer().then(function(reservations) {
+    openDatabase().then(function(db) {
+    var objectStore =
+    openObjectStore(db, "reservations", "readwrite");
+    for (var i = 0; i < reservations.length; i++) {
+    objectStore.add(reservations[i]);
+    }
+    resolve(reservations);
+    });
+    });
+    }
+    }
+    };
+    }).catch(function() {
+    getReservationsFromServer().then(function(reservations) {
+    resolve(reservations);
+    });
+    });
+    });
+    };
 var getReservationsFromServer = function() {
     return new Promise(function(resolve) {
     if (self.$) {

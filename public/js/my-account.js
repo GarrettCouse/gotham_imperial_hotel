@@ -51,13 +51,19 @@ var addReservation = function(id, arrivalDate, nights, guests) {
   guests:
   guests,
   status:
-  "Awaiting confirmation"
+  "Sending"
   };
   addToObjectStore("reservations", reservationDetails);
   renderReservation(reservationDetails);
+  if ("serviceWorker" in navigator && "SyncManager" in window) {
+  navigator.serviceWorker.ready.then(function(registration) {
+  registration.sync.register("sync-reservations");
+  });
+  } else {
   $.getJSON("/make-reservation", reservationDetails, function(data) {
   updateReservationDisplay(data);
   });
+  }
   };
 
 
