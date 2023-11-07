@@ -1,16 +1,24 @@
 $(document).ready(function() {
-
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.register("/serviceworker.js")
-    .then(function(registration) {
-    console.log("Service Worker registered with scope:", registration.scope);
-    }).catch(function(err) {
-    console.log("Service worker registration failed:", err);
-    });
-    }
-  // Fetch and render upcoming events in the hotel
   $.getJSON("/events.json", renderEvents);
-});
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.addEventListener("message", function (event) {
+      var data = event.data;
+      if (data.action === "navigate") {
+      window.location.href = data.url;
+      } else if (data.action === "update-reservation") {
+      updateReservationDisplay(data.reservation);
+      }
+      });
+  $("#logout-button").click(function(event) {
+  if (navigator.serviceWorker.controller) {
+  event.preventDefault();
+  navigator.serviceWorker.controller.postMessage(
+  {action: "logout"}
+  );
+  }
+  });
+  }
+  });
 
 
 
