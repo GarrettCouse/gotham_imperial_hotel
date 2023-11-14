@@ -40,10 +40,10 @@ return caches.match(event.request).then(function(response) {
 if (response) {
 return response;
 } else if (event.request.headers.get("accept").includes("text/html")) {return caches.match("/index.html");
-} else if (requestURL.pathname === "/my-account") {
+} else if (requestURL.pathname === "my-account.html") {
     event.respondWith(
     caches.match("/my-account.html").then(function(response) {
-    return response || fetch("/my-account.html");
+    return response || fetch("my-account.html");
     })
     );
     } else if (requestURL.pathname === "/reservations.json") {
