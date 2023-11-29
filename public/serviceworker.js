@@ -40,23 +40,7 @@ return caches.match(event.request).then(function(response) {
 if (response) {
 return response;
 } else if (event.request.headers.get("accept").includes("text/html")) {return caches.match("/index.html");
-} else if (requestURL.pathname === "my-account.html") {
-    event.respondWith(
-    caches.match("/my-account.html").then(function(response) {
-    return response || fetch("my-account.html");
-    })
-    );
-    } else if (requestURL.pathname === "/reservations.json") {
-    event.respondWith(
-    caches.open(CACHE_NAME).then(function(cache) {
-    return fetch(event.request).then(function(networkResponse) {
-    cache.put(event.request, networkResponse.clone());
-    return networkResponse;
-    }).catch(function() {
-    return caches.match(event.request);
-    });
-    })
-    );}
+}
 });
 })
 );
@@ -131,3 +115,53 @@ var createReservationUrl = function(reservationDetails) {
         });
         }
         });
+
+
+        self.addEventListener("push", function(event) {
+            var data = event.data.json();
+            if (data.type === "reservation-confirmation") {
+            var reservation = data.reservation;
+            event.waitUntil(
+            updateInObjectStore(
+            "reservations",
+            reservation.id,
+            reservation)
+            .then(function() {
+            return self.registration.showNotification("Reservation Confirmed", {
+            body:
+            "Reservation for "+reservation.arrivalDate+" has been confirmed.",
+            icon: "/img/reservation-gih.jpg",
+            badge: "/img/icon-hotel.png",
+            tag: "reservation-confirmation-"+reservation.id,
+            actions: [
+            {
+            action: "details",
+            title: "Show reservations",
+            icon: "/img/icon-cal.png"
+            }, {
+            action: "confirm",
+            title: "OK",
+            icon: "/img/icon-confirm.png"
+            },
+            ],
+            vibrate:
+            [500,110,500,110,450,110,200,110,170,40,450,110,200,110,170,40,500]
+            });
+            })
+            );
+            }
+            });
+
+            self.addEventListener("notificationclick", function(event) {
+                event.notification.close();
+                if (event.action === "details") {event.waitUntil(
+                self.clients.matchAll().then(function(activeClients) {
+                if (activeClients.length > 0) {
+                activeClients[0].navigate("http://localhost:8443/my-account");
+                } else {
+                self.clients.openWindow("http://localhost:8443/my-account");
+                }
+                })
+                );
+                }
+                });
