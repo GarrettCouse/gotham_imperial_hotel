@@ -43,3 +43,14 @@ var renderEvents = function(data) {
     ).insertBefore("#events-container div.calendar-link-container");
   });
 };
+
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("message", function (event) {
+  if (event.data === "events-returned-from-cache") {
+  alert(
+  "You are currently offline. The content of this page may be out of date"
+  );
+  }
+  });
+  }

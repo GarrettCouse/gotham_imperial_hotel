@@ -1,4 +1,5 @@
 importScripts("/js/reservations-store.js");
+importScripts("/js/vendor/progressive-ui-kitt/progressive-ui-kitt-sw-helper.js");
 var CACHE_NAME = "gih-cache-v4";
 var CACHED_URLS = [
 // Our HTML
@@ -23,7 +24,9 @@ var CACHED_URLS = [
 "/my-account.html",
 "/js/my-account.js",
 "/reservations.json",
-"/js/reservations-store.js"
+"/js/reservations-store.js",
+"/js/vendor/progressive-ui-kitt/themes/flat.css",
+"/js/vendor/progressive-ui-kitt/progressive-ui-kitt.js"
 
 ];
 self.addEventListener("install", function(event) {
@@ -39,8 +42,22 @@ fetch(event.request).catch(function() {
 return caches.match(event.request).then(function(response) {
 if (response) {
 return response;
-} else if (event.request.headers.get("accept").includes("text/html")) {return caches.match("/index.html");
-}
+} else if (requestURL.pathname === "/events.json") {
+    event.respondWith(
+    caches.open(CACHE_NAME).then(function(cache) {
+    return fetch(event.request).then(function(networkResponse) {
+    cache.put(event.request, networkResponse.clone());
+    return networkResponse;
+    }).catch(function() {
+    ProgressiveKITT.addAlert(
+    "You are currently offline."+
+    "The content of this page may be out of date."
+    );
+    return caches.match(event.request);
+    });
+    })
+    );
+    }
 });
 })
 );

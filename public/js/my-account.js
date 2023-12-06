@@ -53,15 +53,15 @@ var checkUnconfirmedReservations = function() {
     });
     };
     var offerNotification = function() {
-    if ("Notification" in window &&
-    "serviceWorker" in navigator) {
-    Notification.requestPermission().then(function(permission){
-    if (permission === "granted") {
-    showNewReservationNotification();
-    }
-    });
-    }
-    };
+      if ("Notification" in window &&
+      "PushManager" in window &&
+      "serviceWorker" in navigator) {if (Notification.permission !== "granted") {
+      showNotificationOffer();
+      } else {
+      subscribeUserToNotifications();
+      }
+      }
+      };
 // Adds a reservation as pending to the DOM, and try to contact server to book it.
 var addReservation = function(id, arrivalDate, nights, guests) {
   var reservationDetails = {
@@ -187,3 +187,10 @@ $(document).ready(function() {
     window.history.replaceState(null, "", url.origin + url.pathname);
   }
 });
+
+
+$("#offer-notification a").click(function(event) {
+  event.preventDefault();
+  hideNotificationOffer();
+  subscribeUserToNotifications();
+  });
